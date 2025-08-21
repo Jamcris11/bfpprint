@@ -16,14 +16,24 @@
 
 char* 			buffer;
 unsigned int 	buffer_position = 0;
-unsigned int 	buffer_size 	= 1; // 1 for NULL byte
+unsigned int 	buffer_size 	= 0;
 char 			cascii 			= ASCII_LOWERBOUND;
 unsigned int 	ascii_misses 	= 0;
+
+bool opt_clear = false; /* Clears screen for printing */
+
+static void
+usage(const char* progname)
+{
+	printf("usage: %s [-c] WORDS...\n", progname);
+	printf("\t-c\t clears the screen every write to stdout\n");
+}
 
 static char
 cycle_until_match(const char match)
 {
 	while (ascii_misses < 3) {
+		if ( opt_clear ) { clear(); }
 		printf("\r%s", buffer);
 		printf("%c", cascii);
 		fflush(stdout);
@@ -46,15 +56,34 @@ int
 main(int argc, char** argv)
 {
 	char match;
+	int args_start_index = 1;
 
-	for (int i = 1; i < argc; i++ ) {
+	if ( argc == 1 ) {
+		usage(argv[0]);
+		return 0;
+	}
+
+	if ( argc > 1 && argv[1][0] == '-' ) {
+		args_start_index = 2;
+		for ( int i = 1; i < strlen(argv[1]); i++ ) {
+			char opt = argv[1][i];
+			if ( opt == 'c' ) {
+				opt_clear = true;			
+			} else if ( opt == 'h' ) {
+				usage(argv[0]);
+				return 0;
+			}
+		}
+	}
+
+	for (int i = args_start_index; i < argc; i++ ) {
 		/* + 1 for space character */
 		buffer_size += strlen(argv[i]) + 1;
 	}
 
-	buffer = calloc(buffer_size, sizeof(char));
+	buffer = calloc(++buffer_size, sizeof(char));
 
-	for ( int i = 1; i < argc; i++ ) {
+	for ( int i = args_start_index; i < argc; i++ ) {
 		for ( int j = 0; j < strlen(argv[i]); j++ ) {
 			match = cycle_until_match(argv[i][j]);
 
