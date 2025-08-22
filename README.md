@@ -3,7 +3,7 @@
 
 Prints words in a brute force manner.
 
-![example](./example.gif)
+![example](./example.webp)
 
 ```sh
 usage: bfpp [-c] WORDS...
